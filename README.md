@@ -1,6 +1,6 @@
 ####Watcher for Eagle Eye Networks Poll Stream####
 
-This is a Node.js client that follows the EEVBS API.  It listens for new preview images and then sends them to the client through [Socket.io](http://socket.io).  This is a great place to start if you want to strip the auth requirement for the images and make them available to less capable clients (phones, tvs, pictures frames, etc)  It is also a good place to see a simplified version of subscribing to events.
+This is a Node.js client that follows the [Eagle Eye Networks API](https://apidocs.eagleeyenetworks.com/apidocs/).  It listens for new preview images and then sends them to the client through [Socket.io](http://socket.io).  This is a great place to start if you want to strip the auth requirement for the images and make them available to less capable clients (phones, tvs, pictures frames, etc)  It is also a good place to see a simplified version of subscribing to events.
 
 #####Lifecycle of the app#####
 The following steps need to be performed in order, but any call can be made once user is logged-in.
