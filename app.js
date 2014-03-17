@@ -11,7 +11,7 @@ var app         =       require('http').createServer(route),
 
     app.listen(3000);
 
-    
+
 var  out        =       console.log,
      username   =       require('./config').username || 'username',
      password   =       require('./config').password || 'password',
@@ -43,8 +43,8 @@ function startUp(success, failure) {
 
 function login(success, failure) {
     r.post({
-            url: host + '/g/aaa/authenticate', 
-            json: true, 
+            url: host + '/g/aaa/authenticate',
+            json: true,
             body: { 'username': username, 'password': password, 'realm': realm }
             }, function(err, res, body) {
                 if (err) { out(err.stack); }
@@ -53,21 +53,21 @@ function login(success, failure) {
                         case 200:
                             r.post({ url: host + '/g/aaa/authorize', json: true, body: { token: res.body.token } }, function(err, res, body) {
                                if (err) { out(err.stack); }
-                               if (!err && res.statusCode == 200) { 
+                               if (!err && res.statusCode == 200) {
                                     out('**********************************');
                                     out('           Logged in              ');
                                     out('**********************************');
                                     user = res.body;
                                     if ( typeof success === 'function') success(); // call success callback
                                 }
-                            }) 
+                            })
                             break;
                         default:
                             out(res.statusCode + ': ' +  res.body);
                             if ( typeof failure === 'function') failure(); // call failure callback
 
                     }
-                }    
+                }
     })
 
 }
@@ -81,7 +81,7 @@ function getDevices(success, failure) {
             out('**********************************');
 
             u.each(res.body, function(device) {
-                var tmp = {};                
+                var tmp = {};
                 if(device[3] === 'camera') {
                     tmp = {
                         deviceID:           device[1] || '',
@@ -92,11 +92,11 @@ function getDevices(success, failure) {
                     tmp = {
                         deviceID:           device[1] || '',
                         deviceStatus:       device[5] || ''
-                    }; 
+                    };
                     devices.bridges.push(tmp);
                 }
             });
-            
+
             if ( typeof success === 'function') success(); // call success callback
         }
     });
@@ -104,7 +104,7 @@ function getDevices(success, failure) {
 
 function startPolling(socket) {
     var obj = { 'cameras': {} };
-   
+
     u.each(u.filter(devices.bridges, function(item) { return item.deviceStatus === 'ATTD'; } ), function(item) {
         obj.cameras[item.deviceID] = { "resource": ["event"], "event": ["ALLL"] };
     });
@@ -120,12 +120,13 @@ function startPolling(socket) {
     r.post({
             url:    host + '/poll',
             json:   true,
-            body:   JSON.stringify( obj) 
+            body:   JSON.stringify( obj)
            }, function(err, res, body) {
                 if (err) { out(err.stack) };
                 if (!err) {
                     switch(res.statusCode) {
                         case 200:
+                        case 503:
                             keepPolling(socket);
                             break;
                          default:
@@ -133,7 +134,7 @@ function startPolling(socket) {
                             out('**********************************');
                             out('           Restart Polling        ');
                             out('**********************************');
-                            startPolling(); 
+                            startPolling();
                             break;
                     }
                 }
@@ -169,7 +170,7 @@ function keepPolling(socket) {
                             out('**********************************');
                             out('           Restart Polling        ');
                             out('**********************************');
-                            startPolling(socket); 
+                            startPolling(socket);
                             break;
                     }
                 }
@@ -201,7 +202,7 @@ io.sockets.on('connection', function (socket) {
         },
         // failure case for login
         function() {
-            console.log('Failed to login using these credentials  ' + username + ' : ' + password );    
+            console.log('Failed to login using these credentials  ' + username + ' : ' + password );
         });
     });
 });
@@ -239,7 +240,7 @@ route.get('/jquery.preview.js', function(req, res) {
 
     res.writeHead(200);
     res.end(data);
-    
+
     out('serving /jquery.preview.js');
 
   });
@@ -255,7 +256,7 @@ route.get('/page.html', function(req, res) {
 
     res.writeHead(200);
     res.end(data);
-    
+
     out('serving /page.html');
 
   });
@@ -271,7 +272,7 @@ route.get('*', function(req, res) {
 
     res.writeHead(200);
     res.end(data);
-    
+
     out('serving /index.html');
 
   });
