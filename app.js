@@ -1,7 +1,8 @@
 var r           =       require('request'),
     u           =       require('underscore')._,
     router      =       require('router'),
-    repl        =       require('repl');
+    repl        =       require('repl'),
+    cv          =       require('opencv');
 
 var route       =       router();
 
@@ -23,6 +24,7 @@ var user        =       {},
                             cameras: [],
                             bridges: []
                         };
+
 
 var debug = function(arg) {
     repl.start({
@@ -103,8 +105,9 @@ function getDevices(success, failure) {
 }
 
 function startPolling(socket) {
+    /*
     var obj = { 'cameras': {} };
-
+    
     u.each(u.filter(devices.bridges, function(item) { return item.deviceStatus === 'ATTD'; } ), function(item) {
         obj.cameras[item.deviceID] = { "resource": ["event"], "event": ["ALLL"] };
     });
@@ -112,6 +115,10 @@ function startPolling(socket) {
     u.each(u.filter(devices.cameras, function(item) { return item.deviceStatus === 'ATTD'; } ), function(item) {
         obj.cameras[item.deviceID] = { "resource": ["pre", "thumb", "event", "video"], "event": ["ALLL"] };
     });
+    */
+
+    //only subscribe to a single camera when doing face detection
+    var obj = { 'cameras': {'10035cea': {"resource": ["pre"]} }};
 
     out('**********************************');
     out('           Start Polling          ');
@@ -222,7 +229,25 @@ route.get('/image/{device}/{ts}', function(orig_req, orig_res) {
     var url = host + '/asset/prev/image.jpeg?c=' + device + ';t=' + ts + ';q=high;a=pre';
 
     try {
-        r.get(url).pipe(orig_res)
+        //r.get(url).pipe(orig_res)
+        r.get({uri:url, encoding:'binary'}, function(err, resp, body) {
+        
+        cv.readImage(new Buffer(body, 'binary'), function(err, im){
+            im.detectObject(cv.FACE_CASCADE, {}, function(err, faces){
+                if(faces.length > 0) {
+                    for (var i=0;i<faces.length; i++){
+                         var x = faces[i]
+                         im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
+                    }
+                    //im.save('./out-' + new Date().valueOf() + '.jpg');
+                }
+            orig_res.writeHead(200, {'Content-Type': 'image/jpeg'});  
+            orig_res.end(im.toBuffer()); 
+            });
+        }) 
+        
+
+        })
     } catch(e) {
         out('error in fetching images: ', e)
     }
