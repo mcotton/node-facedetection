@@ -118,7 +118,7 @@ function startPolling(socket) {
     */
 
     //only subscribe to a single camera when doing face detection
-    var obj = { 'cameras': {'10035cea': {"resource": ["pre"]} }};
+    var obj = { 'cameras': {'100f6a43': {"resource": ["pre"]} }};
 
     out('**********************************');
     out('           Start Polling          ');

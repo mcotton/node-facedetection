@@ -19,7 +19,7 @@
     var socket = io.connect('', {
                 'reconnect':                    true,
                 'reconnection delay':           1000,
-                'max reconnection attempts':    10
+                'max reconnection attempts':    10000
             });
 
     
@@ -40,8 +40,22 @@
                     $('body').append('<img id="img_' + device + '">');
                     img_holders[device] = $('#img_' + device);
                 }
-                console.log('fetching preview')
-                img_holders[device].attr('src', '/image/' + device + '/' + data.data.cameras[device].pre );
+		if(img_holders[device].ready) {
+                	console.log('fetching preview')
+                	img_holders[device].attr('src', '/image/' + device + '/' + data.data.cameras[device].pre );
+			img_holders[device].ready = false;
+		
+			$(img_holders[device]).load(function() {
+				img_holders[device].ready = true;
+			})
+
+			$(img_holders[device]).error(function() {
+				img_holders[device].ready = true;
+			})
+		} else {
+			console.log('skipping because still working on previous image');
+		}
+
             } 
         }
     });
