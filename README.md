@@ -19,6 +19,8 @@ The following steps need to be performed in order, but any call can be made once
  - run `npm start	`
  - go to [http://localhost:3000](http://localhost:3000)
 
+#####Extras#####
+Checkout out the facedetection branch if you want to try something different with the previews.  It will show the image in grayscale if it doesn't detect a face.  Not really useful, but interesting example of using node-opencv
 
 #####Configure#####
 
