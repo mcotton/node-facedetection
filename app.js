@@ -118,7 +118,7 @@ function startPolling(socket) {
     */
 
     //only subscribe to a single camera when doing face detection
-    var obj = { 'cameras': {'100f6a43': {"resource": ["pre"]} }};
+    var obj = { 'cameras': {'100263b8': {"resource": ["pre"]} }};
 
     out('**********************************');
     out('           Start Polling          ');
@@ -236,11 +236,13 @@ route.get('/image/{device}/{ts}', function(orig_req, orig_res) {
             im.detectObject(cv.FACE_CASCADE, {}, function(err, faces){
                 if(faces.length > 0) {
                     for (var i=0;i<faces.length; i++){
-                         var x = faces[i]
-                         im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
+                    	var x = faces[i]
+                        im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
                     }
                     //im.save('./out-' + new Date().valueOf() + '.jpg');
-                }
+                } else {
+			im.convertGrayscale();
+		}
             orig_res.writeHead(200, {'Content-Type': 'image/jpeg'});  
             orig_res.end(im.toBuffer()); 
             });
