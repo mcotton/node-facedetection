@@ -1,16 +1,32 @@
 <html>
 <head>
     <title>connecting...</title>
+    <link href='http://fonts.googleapis.com/css?family=Playfair+Display+SC' rel='stylesheet' type='text/css'>
     <style>
-        img {
-            width: 320px;
-            height: 180px;
-        }
+
+	body {
+		color: deeppink;
+		background: url(http://static4.depositphotos.com/1009048/352/i/950/depositphotos_3521493-Vector-Repeating-Background-Pattern.jpg);
+	}
+    
+	#title {
+		font-family: 'Playfair Display SC', serif;
+		width: 410px;
+		margin: 0 auto;
+	}
+
+	#container {
+		width: 640px;
+		margin: 0 auto;
+	}
     </style>
 </head>
 <body>
-
-
+<div id="title">
+	<h1>You light up the room</h1>
+</div>
+<div id="container">
+</div>
 
 
 <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
@@ -23,7 +39,7 @@
     var socket = io.connect('', {
                 'reconnect':                    true,
                 'reconnection delay':           1000,
-                'max reconnection attempts':    10
+                'max reconnection attempts':    10000
             });
 
     
@@ -41,11 +57,28 @@
         for (var device in data.data.cameras) {
             if(data.data.cameras[device].pre) {
                 if(!img_holders[device]) {
-                    $('body').append('<img id="img_' + device + '">');
+                    $('#container').append('<img id="img_' + device + '">');
                     img_holders[device] = $('#img_' + device);
                 }
-                console.log('fetching preview')
-                img_holders[device].attr('src', '/image/' + device + '/' + data.data.cameras[device].pre );
+		if(img_holders[device].ready) {
+                	console.log('fetching preview')
+                	img_holders[device].attr('src', '/image/' + device + '/' + data.data.cameras[device].pre );
+			img_holders[device].ready = false;
+			console.time('processing image')
+		
+			$(img_holders[device]).load(function() {
+				img_holders[device].ready = true;
+				console.timeEnd('processing image')
+			})
+
+			$(img_holders[device]).error(function() {
+				img_holders[device].ready = true;
+				console.timeEnd('processing image')
+			})
+		} else {
+			console.log('skipping because still working on previous image');
+		}
+
             } 
         }
     });

@@ -1,7 +1,8 @@
 var r           =       require('request'),
     u           =       require('underscore')._,
     router      =       require('router'),
-    repl        =       require('repl');
+    repl        =       require('repl'),
+    cv          =       require('opencv');
 
 var route       =       router();
 
@@ -15,6 +16,7 @@ var app         =       require('http').createServer(route),
 var  out        =       console.log,
      username   =       require('./config').username || 'username',
      password   =       require('./config').password || 'password',
+     poll_str   =       require('./config').poll_string || {},
      realm      =       'eagleeyenetworks',
      host       =       'https://eagleeyenetworks.com';
 
@@ -23,6 +25,7 @@ var user        =       {},
                             cameras: [],
                             bridges: []
                         };
+
 
 var debug = function(arg) {
     repl.start({
@@ -103,15 +106,6 @@ function getDevices(success, failure) {
 }
 
 function startPolling(socket) {
-    var obj = { 'cameras': {} };
-
-    u.each(u.filter(devices.bridges, function(item) { return item.deviceStatus === 'ATTD'; } ), function(item) {
-        obj.cameras[item.deviceID] = { "resource": [] };
-    });
-
-    u.each(u.filter(devices.cameras, function(item) { return item.deviceStatus === 'ATTD'; } ), function(item) {
-        obj.cameras[item.deviceID] = { "resource": ["pre", "thumb", "video"] };
-    });
 
     out('**********************************');
     out('           Start Polling          ');
@@ -120,7 +114,7 @@ function startPolling(socket) {
     r.post({
             url:    host + '/poll',
             json:   true,
-            body:   JSON.stringify( obj)
+            body:   JSON.stringify( poll_str)
            }, function(err, res, body) {
                 if (err) { out(err.stack) };
                 if (!err) {
@@ -222,7 +216,27 @@ route.get('/image/{device}/{ts}', function(orig_req, orig_res) {
     var url = host + '/asset/prev/image.jpeg?c=' + device + ';t=' + ts + ';q=high;a=pre';
 
     try {
-        r.get(url).pipe(orig_res)
+        //r.get(url).pipe(orig_res)
+        r.get({uri:url, encoding:'binary'}, function(err, resp, body) {
+        
+        cv.readImage(new Buffer(body, 'binary'), function(err, im){
+            im.detectObject(cv.FACE_CASCADE, {}, function(err, faces){
+                if(faces.length > 0) {
+                    for (var i=0;i<faces.length; i++){
+                    	var x = faces[i]
+                        im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
+                    }
+                    //im.save('./out-' + new Date().valueOf() + '.jpg');
+                } else {
+			im.convertGrayscale();
+		}
+            orig_res.writeHead(200, {'Content-Type': 'image/jpeg'});  
+            orig_res.end(im.toBuffer()); 
+            });
+        }) 
+        
+
+        })
     } catch(e) {
         out('error in fetching images: ', e)
     }
