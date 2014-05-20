@@ -16,6 +16,7 @@ var app         =       require('http').createServer(route),
 var  out        =       console.log,
      username   =       require('./config').username || 'username',
      password   =       require('./config').password || 'password',
+     poll_str   =       require('./config').poll_string || {},
      realm      =       'eagleeyenetworks',
      host       =       'https://eagleeyenetworks.com';
 
@@ -105,20 +106,6 @@ function getDevices(success, failure) {
 }
 
 function startPolling(socket) {
-    /*
-    var obj = { 'cameras': {} };
-    
-    u.each(u.filter(devices.bridges, function(item) { return item.deviceStatus === 'ATTD'; } ), function(item) {
-        obj.cameras[item.deviceID] = { "resource": ["event"], "event": ["ALLL"] };
-    });
-
-    u.each(u.filter(devices.cameras, function(item) { return item.deviceStatus === 'ATTD'; } ), function(item) {
-        obj.cameras[item.deviceID] = { "resource": ["pre", "thumb", "event", "video"], "event": ["ALLL"] };
-    });
-    */
-
-    //only subscribe to a single camera when doing face detection
-    var obj = { 'cameras': {'100263b8': {"resource": ["pre"]} }};
 
     out('**********************************');
     out('           Start Polling          ');
@@ -127,7 +114,7 @@ function startPolling(socket) {
     r.post({
             url:    host + '/poll',
             json:   true,
-            body:   JSON.stringify( obj)
+            body:   JSON.stringify( poll_str)
            }, function(err, res, body) {
                 if (err) { out(err.stack) };
                 if (!err) {
