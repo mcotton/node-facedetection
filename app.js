@@ -106,11 +106,11 @@ function startPolling(socket) {
     var obj = { 'cameras': {} };
 
     u.each(u.filter(devices.bridges, function(item) { return item.deviceStatus === 'ATTD'; } ), function(item) {
-        obj.cameras[item.deviceID] = { "resource": ["event"], "event": ["ALLL"] };
+        obj.cameras[item.deviceID] = { "resource": [] };
     });
 
     u.each(u.filter(devices.cameras, function(item) { return item.deviceStatus === 'ATTD'; } ), function(item) {
-        obj.cameras[item.deviceID] = { "resource": ["pre", "thumb", "event", "video"], "event": ["ALLL"] };
+        obj.cameras[item.deviceID] = { "resource": ["pre", "thumb", "video"] };
     });
 
     out('**********************************');
