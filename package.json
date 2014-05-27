@@ -4,9 +4,7 @@
   "description": "Watching the poll stream",
   "main": "app.js",
   "dependencies": {
-    "request": "~2.21.0"
-  },
-  "devDependencies": {
+    "opencv": "^0.5.0",
     "request": "~2.21.0",
     "underscore": "~1.4.4",
     "socket.io": "~0.9.14",
