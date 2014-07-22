@@ -8,10 +8,13 @@ var route       =       router();
 
 var app         =       require('http').createServer(route),
     io          =       require('socket.io').listen(app, { log: false }),
+    sock        =       undefined,
     fs          =       require('fs');
 
     app.listen(3000);
 
+var magick      =       require('imagemagick'),
+    magicks     =       require('imagemagick-stream');
 
 var  out        =       console.log,
      username   =       require('./config').username || 'username',
@@ -183,6 +186,7 @@ function processPollingData(socket, data) {
 
 
 io.sockets.on('connection', function (socket) {
+    if(sock == undefined) sock = socket;
 
     // tell the client what there id is
     socket.send(socket.id);
@@ -224,12 +228,19 @@ route.get('/image/{device}/{ts}', function(orig_req, orig_res) {
                 if(faces.length > 0) {
                     for (var i=0;i<faces.length; i++){
                     	var x = faces[i]
+                        //im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
+
+                        var filestring = 'im-' + new Date().valueOf() + '.jpg'
+                        var im2 = im
+                        im2.save(filestring);
+                        magicks(filestring).crop([x.width*2, 'x', x.height*2, '+', x.x - (x.width/2), '+', x.y - (x.height/2)].join('')).to('crop-' + filestring)
                         im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
+                        sock.emit('face', {'url': 'crop-' + filestring})
                     }
-                    //im.save('./out-' + new Date().valueOf() + '.jpg');
                 } else {
 			im.convertGrayscale();
 		}
+
             orig_res.writeHead(200, {'Content-Type': 'image/jpeg'});  
             orig_res.end(im.toBuffer()); 
             });
@@ -243,6 +254,25 @@ route.get('/image/{device}/{ts}', function(orig_req, orig_res) {
 
 });
 
+route.get('/cropped/{filestring}', function(req, res) { setTimeout ( function() {
+  var filestring = req.params.filestring
+  console.log('/cropped/' + filestring + ' requested')
+  fs.readFile(__dirname + '/' + filestring,
+  function (err, data) {
+    if (err) {
+      res.writeHead(500);
+      return res.end('Error loading /cropped/' + filestring);
+    }
+
+    res.writeHead(200);
+    res.end(data);
+
+    out('serving /cropped/' + filestring);
+
+  });
+
+}, 3000)
+})
 
 route.get('/jquery.preview.js', function(req, res) {
   fs.readFile(__dirname + '/jquery.preview.js',
@@ -296,9 +326,4 @@ route.get('*', function(req, res) {
 
 process.on('uncaughtException', function(err) {
   console.log('Caught exception: ' + err);
-  switch(err) {
-    case 'Error: Parse Error':
-        out(err);
-        break;
-  }
 });

@@ -27,7 +27,11 @@
 </div>
 <div id="container">
 </div>
-
+<p>
+    Last updated: <span id="ts"></span>
+    Time processing: <span id="ticks"></span>
+</p>
+<div id="images"></div>
 
 <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
@@ -64,11 +68,16 @@
                 	console.log('fetching preview')
                 	img_holders[device].attr('src', '/image/' + device + '/' + data.data.cameras[device].pre );
 			img_holders[device].ready = false;
+			img_holders[device].ts = data.data.cameras[device].pre;
+			img_holders[device].time = window.performance.now();
 			console.time('processing image')
+            $('#ts').html(data.data.cameras[device].pre)
 		
 			$(img_holders[device]).load(function() {
 				img_holders[device].ready = true;
+                $('#ts').html(img_holders[device].ts)
 				console.timeEnd('processing image')
+				$('#ticks').html(window.performance.now() - img_holders[device].time)
 			})
 
 			$(img_holders[device]).error(function() {
@@ -82,6 +91,13 @@
             } 
         }
     });
+
+    socket.on('face', function(data) {
+        var img = new Image()
+        img.src = '/cropped/' + data.url;
+        $('#images').prepend(img)
+    });
+
 </script>
 </body>
 </html>

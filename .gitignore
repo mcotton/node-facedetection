@@ -4,3 +4,4 @@ node_modules/
 config.js
 page.html
 jquery.preview.js
+*.swp
