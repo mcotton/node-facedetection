@@ -1,8 +1,14 @@
 var r           =       require('request'),
     u           =       require('underscore')._,
     router      =       require('router'),
-    repl        =       require('repl'),
-    cv          =       require('opencv');
+    repl        =       require('repl');
+
+// make it more understanding if opencv isn't installed
+try {
+    var cv          =       require('opencv');
+} catch(e) {
+    console.log("Couldn't find opencv, will continue without face detection")
+}
 
 var route       =       router();
 
@@ -220,23 +226,27 @@ route.get('/image/{device}/{ts}', function(orig_req, orig_res) {
         //r.get(url).pipe(orig_res)
         r.get({uri:url, encoding:'binary'}, function(err, resp, body) {
         
-        cv.readImage(new Buffer(body, 'binary'), function(err, im){
-            im.detectObject(cv.FACE_CASCADE, {}, function(err, faces){
-                if(faces.length > 0) {
-                    for (var i=0;i<faces.length; i++){
-                    	var x = faces[i]
-                        im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
-                    }
-                    console.log('found a face');
-                    if(save_files) im.save('./out-' + new Date().valueOf() + '.jpg');
-                } else {
-			im.convertGrayscale();
-		}
+        if(cv) {
+            cv.readImage(new Buffer(body, 'binary'), function(err, im){
+                im.detectObject(cv.FACE_CASCADE, {}, function(err, faces){
+                    if(faces.length > 0) {
+                        for (var i=0;i<faces.length; i++){
+                    	    var x = faces[i]
+                            im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
+                        }
+                        console.log('found a face');
+                        if(save_files) im.save('./out-' + new Date().valueOf() + '.jpg');
+                    } else {
+			            im.convertGrayscale();
+		            }
+                orig_res.writeHead(200, {'Content-Type': 'image/jpeg'});  
+                orig_res.end(im.toBuffer()); 
+                });
+            }) 
+        } else {
             orig_res.writeHead(200, {'Content-Type': 'image/jpeg'});  
-            orig_res.end(im.toBuffer()); 
-            });
-        }) 
-        
+            orig_res.end(new Buffer(body, 'binary')); 
+        }
 
         })
     } catch(e) {
