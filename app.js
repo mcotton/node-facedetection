@@ -17,6 +17,7 @@ var  out        =       console.log,
      username   =       require('./config').username || 'username',
      password   =       require('./config').password || 'password',
      poll_str   =       require('./config').poll_string || {},
+     save_files =       require('./config').save_files || false,
      realm      =       'eagleeyenetworks',
      host       =       'https://eagleeyenetworks.com';
 
@@ -226,7 +227,8 @@ route.get('/image/{device}/{ts}', function(orig_req, orig_res) {
                     	var x = faces[i]
                         im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
                     }
-                    //im.save('./out-' + new Date().valueOf() + '.jpg');
+                    console.log('found a face');
+                    if(save_files) im.save('./out-' + new Date().valueOf() + '.jpg');
                 } else {
 			im.convertGrayscale();
 		}
