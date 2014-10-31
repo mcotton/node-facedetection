@@ -25,13 +25,13 @@ The following steps need to be performed in order, but any call can be made once
 
 #####Configure#####
 
- Edit `config.js` and replace 'your_username' and 'your_password' with your username and password.
+ Create a file named `config.js` and replace 'your_username' and 'your_password' with your username and password.  You will need to replace '<device_id>' with a device you are subscribing to.
 
-
-        module.exports = {
-            'username'  :   'your_username',
-            'password'  :   'your_password',
-            'poll_string': { 'cameras': {'<device_id>': {"resource": ["pre"]} }} 
-        }
+    module.exports = {
+        'username': 'your_username',
+        'password':  'your_password',
+        'poll_string': { 'cameras': {'<device_id>': {"resource": ["pre"]} }},
+        'save_files': false
+    };
 
 
