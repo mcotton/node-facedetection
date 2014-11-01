@@ -18,6 +18,13 @@ var app         =       require('http').createServer(route),
 
     app.listen(3000);
 
+// check for the config module
+try {
+    var config          =       require('./config');
+} catch(e) {
+    console.log("Couldn't find config module, please check the README.  Stopping now.")
+    process.exit()
+}
 
 var  out        =       console.log,
      username   =       require('./config').username || 'username',
@@ -204,6 +211,7 @@ io.sockets.on('connection', function (socket) {
         // failure case for login
         function() {
             console.log('Failed to login using these credentials  ' + username + ' : ' + password );
+            process.exit()
         });
     });
 });
